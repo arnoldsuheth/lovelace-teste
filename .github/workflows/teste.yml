@@ -1,0 +1,63 @@
+name: Lovelace teste - publicar copia de teste
+# Esta copia de teste NAO mexe no jogo oficial. O codigo vem do ramo de teste do repositorio original.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+concurrency:
+  group: lovelace-teste
+  cancel-in-progress: true
+env:
+  CODE_REPO: arnoldsuheth/evolution-lab-next
+  CODE_REF: arnoldsuheth-patch-1
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { repository: "${{ env.CODE_REPO }}", ref: "${{ env.CODE_REF }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm }
+      - run: npm ci
+      - name: Modelos
+        run: |
+          node scripts/fetch-pilot.mjs
+          node scripts/fetch-original-pilot.mjs
+      - name: Testes
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint -- --max-warnings=0
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with: { repository: "${{ env.CODE_REPO }}", ref: "${{ env.CODE_REF }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm }
+      - run: npm ci
+      - name: Site estatico de teste
+        env:
+          GITHUB_PAGES: "true"
+          PAGES_BASE_PATH: "/lovelace-teste"
+          TEST_NAMESPACE: "lovelace-teste:"
+          NEXT_PUBLIC_CLOUD_SYNC_ENABLED: "false"
+        run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with: { path: ./out }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
