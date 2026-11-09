@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 env:
   CODE_REPO: arnoldsuheth/evolution-lab-next
-  CODE_REF: 1160801fac9f2eb9270d237315918206c3202e79
+  CODE_REF: d27f72659028e5b55d2a2e389255d52e4e6320c4
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with: { path: ./out }
   deploy:
-    needs: build
+    needs: [build, checks]
     runs-on: ubuntu-latest
     permissions:
       pages: write
