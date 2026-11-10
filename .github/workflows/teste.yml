@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 env:
   CODE_REPO: arnoldsuheth/evolution-lab-next
-  CODE_REF: d27f72659028e5b55d2a2e389255d52e4e6320c4
+  CODE_REF: 952c9da167cdfcae806be1e1982f76ae992f689a
 jobs:
   checks:
     runs-on: ubuntu-latest
